@@ -16,32 +16,32 @@ import java.util.*;
 
 public class FarmingMinion {
 
-    // --- Constants ---
+    
     public static final int STORAGE_SIZE = 27;
     public static final int DEFAULT_RADIUS = 3;
-    public static final long DEFAULT_INTERVAL_TICKS = 100L; // 5 seconds
+    public static final long DEFAULT_INTERVAL_TICKS = 100L; 
 
-    // --- Identity ---
+    
     private final UUID id;
     private final UUID ownerUuid;
     private String ownerName;
 
-    // --- World ---
-    private final Location location;   // block location where minion was placed
+    
+    private final Location location;   
     private ArmorStand stand;
 
-    // --- Farming area ---
-    private MinionRegion region;       // custom wand region (nullable — uses radius if null)
+    
+    private MinionRegion region;       
 
-    // --- State ---
+    
     private final List<ItemStack> storage = new ArrayList<>();
     private int radius;
     private long intervalTicks;
     private boolean active = true;
-    private boolean busy = false;      // true while stand is walking/harvesting
+    private boolean busy = false;      
     private FarmingMinionTask task;
 
-    // --- Upgrade levels (1-5) ---
+    
     private int speedLevel = 1;
     private int rangeLevel = 1;
     private int storageLevel = 1;
@@ -56,7 +56,7 @@ public class FarmingMinion {
         this.intervalTicks = DEFAULT_INTERVAL_TICKS;
     }
 
-    /** Full constructor for loading from config. */
+    
     public FarmingMinion(UUID id, UUID ownerUuid, String ownerName, Location location,
                          int speedLevel, int rangeLevel, int storageLevel) {
         this.id = id;
@@ -69,9 +69,9 @@ public class FarmingMinion {
         applyUpgradeStats();
     }
 
-    // -------------------------------------------------------------------------
-    // Spawn / Despawn
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void spawnArmorStand() {
         Location spawnLoc = findGroundSpawn();
@@ -87,19 +87,15 @@ public class FarmingMinion {
         stand.setBasePlate(false);
         stand.setPersistent(false);
 
-        // Farmer outfit — colored leather armor + carved pumpkin head
+        
         stand.getEquipment().setHelmet(new ItemStack(Material.CARVED_PUMPKIN));
-        stand.getEquipment().setChestplate(coloredLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(34, 139, 34)));  // forest green
-        stand.getEquipment().setLeggings(coloredLeather(Material.LEATHER_LEGGINGS,   Color.fromRGB(139, 90,  43)));   // warm brown
-        stand.getEquipment().setBoots(coloredLeather(Material.LEATHER_BOOTS,         Color.fromRGB(62,  39,  17)));   // dark brown
+        stand.getEquipment().setChestplate(coloredLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(34, 139, 34)));  
+        stand.getEquipment().setLeggings(coloredLeather(Material.LEATHER_LEGGINGS,   Color.fromRGB(139, 90,  43)));   
+        stand.getEquipment().setBoots(coloredLeather(Material.LEATHER_BOOTS,         Color.fromRGB(62,  39,  17)));   
         stand.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_HOE));
     }
 
-    /**
-     * Scans downward from the placement location to find where the armor stand
-     * should stand (first air block above a solid block). Falls back to
-     * getHomeLocation() if nothing suitable is found within 5 blocks.
-     */
+    
     private Location findGroundSpawn() {
         Location home = getHomeLocation();
         for (int dy = 0; dy >= -5; dy--) {
@@ -112,7 +108,7 @@ public class FarmingMinion {
         return home;
     }
 
-    /** Creates a colored leather armor piece. */
+    
     private ItemStack coloredLeather(Material material, Color color) {
         ItemStack item = new ItemStack(material);
         LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
@@ -128,9 +124,9 @@ public class FarmingMinion {
         stand = null;
     }
 
-    // -------------------------------------------------------------------------
-    // Task management
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void startTask(Miniony plugin) {
         stopTask();
@@ -145,11 +141,7 @@ public class FarmingMinion {
         }
     }
 
-    /**
-     * Starts a lightweight gravity runnable (every 10 ticks).
-     * When the minion is idle and floating in air, it snaps down to the
-     * nearest solid ground within 20 blocks — simulating gravity.
-     */
+    
     public void startGravityTask(Miniony plugin) {
         stopGravityTask();
         gravityTask = new BukkitRunnable() {
@@ -157,12 +149,12 @@ public class FarmingMinion {
             public void run() {
                 ArmorStand s = stand;
                 if (s == null || s.isDead()) { cancel(); return; }
-                if (busy) return; // walkTo already handles Y while moving
+                if (busy) return; 
 
                 Location loc   = s.getLocation();
                 Block    feet  = loc.getBlock();
                 Block    below = feet.getRelative(0, -1, 0);
-                // Only act if both current block AND the one below are non-solid (floating)
+                
                 if (!feet.getType().isSolid() && !below.getType().isSolid()) {
                     for (int dy = -2; dy >= -20; dy--) {
                         Block b  = s.getWorld().getBlockAt(
@@ -188,9 +180,9 @@ public class FarmingMinion {
     }
 
 
-    // -------------------------------------------------------------------------
-    // Storage helpers
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public int getStorageCapacity() {
         return STORAGE_SIZE + (storageLevel - 1) * 9;
@@ -226,9 +218,9 @@ public class FarmingMinion {
         return item.getAmount() > 0 ? item : null;
     }
 
-    // -------------------------------------------------------------------------
-    // Upgrades
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void applyUpgradeStats() {
         this.intervalTicks = Math.max(20L, DEFAULT_INTERVAL_TICKS - (speedLevel - 1) * 20L);
@@ -259,9 +251,9 @@ public class FarmingMinion {
         return true;
     }
 
-    // -------------------------------------------------------------------------
-    // Nametag
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void refreshNametag() {
         if (stand != null && !stand.isDead()) {
@@ -275,11 +267,11 @@ public class FarmingMinion {
         return "§6§lFarming Minion " + status + " §7[" + ownerName + "]" + regionTag;
     }
 
-    // -------------------------------------------------------------------------
-    // Getters / Setters
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /** The home position — center of the placement block, at placement Y. */
+    
     public Location getHomeLocation() {
         return location.clone().add(0.5, 0, 0.5);
     }

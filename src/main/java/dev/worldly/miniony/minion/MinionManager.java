@@ -14,14 +14,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-/**
- * Manages all FarmingMinion instances: spawn, remove, save, load.
- */
+
 public class MinionManager {
 
     private final Miniony plugin;
-    private final Map<UUID, FarmingMinion> minions = new HashMap<>();   // minion id → minion
-    private final Map<UUID, UUID> standToMinion = new HashMap<>();       // stand uuid → minion id
+    private final Map<UUID, FarmingMinion> minions = new HashMap<>();   
+    private final Map<UUID, UUID> standToMinion = new HashMap<>();       
 
     private final File dataFile;
     private FileConfiguration dataConfig;
@@ -31,11 +29,11 @@ public class MinionManager {
         this.dataFile = new File(plugin.getDataFolder(), "minions.yml");
     }
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /** Load all minions from disk and spawn them in the world. */
+    
     public void load() {
         if (!dataFile.exists()) return;
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
@@ -71,7 +69,7 @@ public class MinionManager {
                 FarmingMinion minion = new FarmingMinion(id, ownerUuid, ownerName, loc,
                         speedLevel, rangeLevel, storageLevel);
 
-                // Load stored items
+                
                 ConfigurationSection storageSec = sec.getConfigurationSection("storage");
                 if (storageSec != null) {
                     for (String itemKey : storageSec.getKeys(false)) {
@@ -83,7 +81,7 @@ public class MinionManager {
                 boolean active = sec.getBoolean("active", true);
                 minion.setActive(active);
 
-                // Load region if present
+                
                 if (sec.contains("region.minX")) {
                     String regionWorld = sec.getString("region.world", worldName);
                     World rw = Bukkit.getWorld(regionWorld);
@@ -105,7 +103,7 @@ public class MinionManager {
         plugin.getLogger().info("Loaded " + minions.size() + " farming minion(s).");
     }
 
-    /** Save all minions to disk. */
+    
     public void save() {
         dataConfig = new YamlConfiguration();
 
@@ -122,7 +120,7 @@ public class MinionManager {
             dataConfig.set(key + ".storage-level", minion.getStorageLevel());
             dataConfig.set(key + ".active",        minion.isActive());
 
-            // Save region
+            
             MinionRegion region = minion.getRegion();
             if (region != null) {
                 dataConfig.set(key + ".region.world",  region.getWorld().getName());
@@ -134,7 +132,7 @@ public class MinionManager {
                 dataConfig.set(key + ".region.maxZ",   region.getMaxZ());
             }
 
-            // Save storage
+            
             List<ItemStack> storage = minion.getStorage();
             for (int i = 0; i < storage.size(); i++) {
                 dataConfig.set(key + ".storage." + i, storage.get(i));
@@ -148,7 +146,7 @@ public class MinionManager {
         }
     }
 
-    /** Despawn all minions (called on disable). */
+    
     public void unloadAll() {
         for (FarmingMinion minion : new ArrayList<>(minions.values())) {
             minion.stopTask();
@@ -159,20 +157,16 @@ public class MinionManager {
         standToMinion.clear();
     }
 
-    // -------------------------------------------------------------------------
-    // Spawn / Remove
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /**
-     * Spawns a brand-new minion at the given location for a player (no region).
-     */
+    
     public FarmingMinion createMinion(UUID ownerUuid, String ownerName, Location location) {
         return createMinion(ownerUuid, ownerName, location, null);
     }
 
-    /**
-     * Spawns a brand-new minion with an optional pre-assigned farming region.
-     */
+    
     public FarmingMinion createMinion(UUID ownerUuid, String ownerName, Location location, MinionRegion region) {
         FarmingMinion minion = new FarmingMinion(ownerUuid, ownerName, location);
         if (region != null) minion.setRegion(region);
@@ -181,7 +175,7 @@ public class MinionManager {
         return minion;
     }
 
-    /** Internal helper — registers + spawns a FarmingMinion instance. */
+    
     private void spawnMinion(FarmingMinion minion) {
         minion.spawnArmorStand();
         minion.startTask(plugin);
@@ -192,21 +186,18 @@ public class MinionManager {
         }
     }
 
-    /**
-     * Re-spawns the armor stand for a minion whose entity was deleted by a chunk unload.
-     * Keeps all data (storage, upgrades, region) intact.
-     */
+    
     public void respawnMinion(FarmingMinion minion) {
-        // Remove stale stand UUID from the lookup map
+        
         if (minion.getStandUuid() != null) {
             standToMinion.remove(minion.getStandUuid());
         }
-        // Clean up any dead tasks/entity reference
+        
         minion.stopTask();
         minion.stopGravityTask();
         minion.removeArmorStand();
 
-        // Re-spawn and restart
+        
         minion.spawnArmorStand();
         minion.startTask(plugin);
         minion.startGravityTask(plugin);
@@ -216,9 +207,7 @@ public class MinionManager {
         }
     }
 
-    /**
-     * Removes a minion completely (despawn + delete from disk).
-     */
+    
     public void removeMinion(FarmingMinion minion) {
         minion.stopTask();
         minion.stopGravityTask();
@@ -230,9 +219,9 @@ public class MinionManager {
         save();
     }
 
-    // -------------------------------------------------------------------------
-    // Lookups
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public FarmingMinion getMinionByStandUuid(UUID standUuid) {
         UUID minionId = standToMinion.get(standUuid);

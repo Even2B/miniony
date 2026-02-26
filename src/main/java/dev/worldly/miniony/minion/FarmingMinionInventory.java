@@ -12,33 +12,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * GUI for a FarmingMinion.
- *
- * Layout (54 slots = 6 rows):
- * Row 0-2  (slots  0-26): Storage (27 slots)
- * Row 3    (slots 27-35): Border (glass panes)
- * Row 4    (slots 36-44): Info + Upgrades
- * Row 5    (slots 45-53): Border + Collect All button
- *
- * Info row:
- *   36 = Minion Info (paper)
- *   38 = Speed Upgrade
- *   40 = Range Upgrade
- *   42 = Storage Upgrade
- *   44 = Toggle Active
- *
- * Action row:
- *   49 = Collect All (chest)
- */
+
 public class FarmingMinionInventory implements InventoryHolder {
 
     public static final int SIZE = 54;
 
-    // Slot constants
+    
     public static final int SLOT_INFO        = 36;
     public static final int SLOT_SPEED_UP    = 38;
-    public static final int SLOT_REGION_INFO = 40;   // read-only region display (replaces range upgrade)
+    public static final int SLOT_REGION_INFO = 40;   
     public static final int SLOT_STORAGE_UP  = 42;
     public static final int SLOT_TOGGLE      = 44;
     public static final int SLOT_COLLECT_ALL = 49;
@@ -53,9 +35,9 @@ public class FarmingMinionInventory implements InventoryHolder {
         refresh();
     }
 
-    // -------------------------------------------------------------------------
-    // Build / Refresh
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void refresh() {
         inventory.clear();
@@ -86,7 +68,7 @@ public class FarmingMinionInventory implements InventoryHolder {
         for (int i = 45; i < 54; i++) {
             inventory.setItem(i, border(Material.BLACK_STAINED_GLASS_PANE, " "));
         }
-        // fill gaps in info row
+        
         for (int i = 36; i <= 44; i++) {
             if (inventory.getItem(i) == null) {
                 inventory.setItem(i, border(Material.GRAY_STAINED_GLASS_PANE, " "));
@@ -95,10 +77,10 @@ public class FarmingMinionInventory implements InventoryHolder {
     }
 
     private void fillInfo() {
-        // Info
+        
         inventory.setItem(SLOT_INFO, buildInfo());
 
-        // Speed upgrade
+        
         inventory.setItem(SLOT_SPEED_UP, buildUpgradeItem(
                 Material.FEATHER,
                 "§e§lSpeed Upgrade",
@@ -107,10 +89,10 @@ public class FarmingMinionInventory implements InventoryHolder {
                 "§aLeft-click to upgrade!"
         ));
 
-        // Region info (read-only — wand is used to change it)
+        
         inventory.setItem(SLOT_REGION_INFO, buildRegionInfo());
 
-        // Storage upgrade
+        
         inventory.setItem(SLOT_STORAGE_UP, buildUpgradeItem(
                 Material.CHEST,
                 "§6§lStorage Upgrade",
@@ -119,7 +101,7 @@ public class FarmingMinionInventory implements InventoryHolder {
                 "§aLeft-click to upgrade!"
         ));
 
-        // Toggle
+        
         boolean active = minion.isActive();
         inventory.setItem(SLOT_TOGGLE, buildSimple(
                 active ? Material.LIME_DYE : Material.GRAY_DYE,
@@ -137,9 +119,9 @@ public class FarmingMinionInventory implements InventoryHolder {
         ));
     }
 
-    // -------------------------------------------------------------------------
-    // Item builders
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     private ItemStack buildInfo() {
         ItemStack item = new ItemStack(Material.PAPER);
@@ -248,14 +230,11 @@ public class FarmingMinionInventory implements InventoryHolder {
         return bar.toString();
     }
 
-    // -------------------------------------------------------------------------
-    // Storage sync (GUI → minion)
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /**
-     * Syncs the storage slots back from the GUI into the minion's storage list.
-     * Called when the GUI is closed.
-     */
+    
     public void syncStorageToMinion() {
         minion.getStorage().clear();
         for (int i = 0; i < 27 && i < minion.getStorageCapacity(); i++) {
@@ -267,9 +246,9 @@ public class FarmingMinionInventory implements InventoryHolder {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Slot utilities
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public static boolean isStorageSlot(int slot) {
         return slot >= 0 && slot < 27;

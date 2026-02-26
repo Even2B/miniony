@@ -7,17 +7,14 @@ import org.bukkit.block.Block;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A rectangular region defined by two corner positions.
- * Used to tell a FarmingMinion exactly which area to farm.
- */
+
 public class MinionRegion {
 
     private final World world;
     private final int minX, minY, minZ;
     private final int maxX, maxY, maxZ;
 
-    /** Build from two wand-selected corners. */
+    
     public MinionRegion(Location pos1, Location pos2) {
         this.world = pos1.getWorld();
         this.minX = Math.min(pos1.getBlockX(), pos2.getBlockX());
@@ -28,7 +25,7 @@ public class MinionRegion {
         this.maxZ = Math.max(pos1.getBlockZ(), pos2.getBlockZ());
     }
 
-    /** Build from raw values (used when loading from config). */
+    
     public MinionRegion(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         this.world = world;
         this.minX = minX; this.minY = minY; this.minZ = minZ;
@@ -41,7 +38,7 @@ public class MinionRegion {
         return x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ;
     }
 
-    /** Returns every block in the region. Use sparingly on large regions. */
+    
     public List<Block> getAllBlocks() {
         List<Block> blocks = new ArrayList<>();
         for (int x = minX; x <= maxX; x++)
@@ -51,7 +48,7 @@ public class MinionRegion {
         return blocks;
     }
 
-    /** Human-readable dimensions, e.g. "10x1x10". */
+    
     public String describe() {
         return (maxX - minX + 1) + "x" + (maxY - minY + 1) + "x" + (maxZ - minZ + 1);
     }

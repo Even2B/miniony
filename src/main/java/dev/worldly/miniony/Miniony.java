@@ -15,20 +15,20 @@ public final class Miniony extends JavaPlugin {
     public void onEnable() {
         if (!getDataFolder().exists()) getDataFolder().mkdirs();
 
-        // Farming minions
+        
         minionManager = new MinionManager(this);
         minionManager.load();
 
-        // Lumberjack minions
+        
         lumberjackManager = new LumberjackMinionManager(this);
         lumberjackManager.load();
 
-        // Command
+        
         MinionCommand cmd = new MinionCommand(this, minionManager, lumberjackManager);
         getCommand("minion").setExecutor(cmd);
         getCommand("minion").setTabCompleter(cmd);
 
-        // Listener
+        
         getServer().getPluginManager().registerEvents(
                 new MinionListener(minionManager, lumberjackManager), this);
 

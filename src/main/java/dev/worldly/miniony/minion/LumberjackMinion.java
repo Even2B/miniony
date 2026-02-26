@@ -18,7 +18,7 @@ public class LumberjackMinion {
 
     public static final int  STORAGE_SIZE          = 27;
     public static final int  DEFAULT_RADIUS         = 10;
-    public static final long DEFAULT_INTERVAL_TICKS = 200L; // 10 s
+    public static final long DEFAULT_INTERVAL_TICKS = 200L; 
 
     private final UUID id;
     private final UUID ownerUuid;
@@ -38,7 +38,7 @@ public class LumberjackMinion {
     private int storageLevel = 1;
     private BukkitTask gravityTask = null;
 
-    // New-minion constructor
+    
     public LumberjackMinion(UUID ownerUuid, String ownerName, Location location) {
         this.id          = UUID.randomUUID();
         this.ownerUuid   = ownerUuid;
@@ -47,7 +47,7 @@ public class LumberjackMinion {
         applyUpgradeStats();
     }
 
-    // Load-from-config constructor
+    
     public LumberjackMinion(UUID id, UUID ownerUuid, String ownerName, Location location,
                             int speedLevel, int storageLevel) {
         this.id           = id;
@@ -59,9 +59,9 @@ public class LumberjackMinion {
         applyUpgradeStats();
     }
 
-    // -------------------------------------------------------------------------
-    // Spawn / Despawn
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void spawnArmorStand() {
         Location spawnLoc = findGroundSpawn();
@@ -77,7 +77,7 @@ public class LumberjackMinion {
         stand.setBasePlate(false);
         stand.setPersistent(false);
 
-        // Lumberjack outfit — woodsy browns + iron axe
+        
         stand.getEquipment().setHelmet(coloredLeather(Material.LEATHER_HELMET,     Color.fromRGB(101, 67,  33)));
         stand.getEquipment().setChestplate(coloredLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(139, 90,  43)));
         stand.getEquipment().setLeggings(coloredLeather(Material.LEATHER_LEGGINGS,    Color.fromRGB(101, 67,  33)));
@@ -112,9 +112,9 @@ public class LumberjackMinion {
         stand = null;
     }
 
-    // -------------------------------------------------------------------------
-    // Task
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void startTask(Miniony plugin) {
         stopTask();
@@ -129,12 +129,7 @@ public class LumberjackMinion {
         }
     }
 
-    /**
-     * Starts a lightweight gravity runnable (every 10 ticks).
-     * When the minion is idle and floating in air, it snaps down to the
-     * nearest solid ground within 20 blocks — simulating gravity.
-     * Logs and leaves are not counted as ground.
-     */
+    
     public void startGravityTask(Miniony plugin) {
         stopGravityTask();
         gravityTask = new BukkitRunnable() {
@@ -142,12 +137,12 @@ public class LumberjackMinion {
             public void run() {
                 ArmorStand s = stand;
                 if (s == null || s.isDead()) { cancel(); return; }
-                if (busy) return; // walkTo already handles Y while moving
+                if (busy) return; 
 
                 Location loc   = s.getLocation();
                 Block    feet  = loc.getBlock();
                 Block    below = feet.getRelative(0, -1, 0);
-                // Only act if both current block AND the one below are non-solid (floating)
+                
                 if (!feet.getType().isSolid() && !below.getType().isSolid()) {
                     for (int dy = -2; dy >= -20; dy--) {
                         Block b  = s.getWorld().getBlockAt(
@@ -174,9 +169,9 @@ public class LumberjackMinion {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Storage
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public int getStorageCapacity() {
         return STORAGE_SIZE + (storageLevel - 1) * 9;
@@ -208,9 +203,9 @@ public class LumberjackMinion {
         return item.getAmount() > 0 ? item : null;
     }
 
-    // -------------------------------------------------------------------------
-    // Upgrades
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void applyUpgradeStats() {
         this.intervalTicks = Math.max(40L, DEFAULT_INTERVAL_TICKS - (speedLevel - 1) * 30L);
@@ -231,9 +226,9 @@ public class LumberjackMinion {
         return true;
     }
 
-    // -------------------------------------------------------------------------
-    // Nametag
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void refreshNametag() {
         if (stand != null && !stand.isDead()) stand.setCustomName(buildNametag());
@@ -244,9 +239,9 @@ public class LumberjackMinion {
         return "§2§lLumberjack Minion " + status + " §7[" + ownerName + "]";
     }
 
-    // -------------------------------------------------------------------------
-    // Getters / Setters
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public Location getHomeLocation() { return location.clone().add(0.5, 0, 0.5); }
 

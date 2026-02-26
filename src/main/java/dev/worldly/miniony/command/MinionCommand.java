@@ -22,16 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * /minion <sub-command> [args]
- *
- * Sub-commands:
- *   give [farming|lumberjack] [player]
- *   wand          — region-selection wand (farming minion)
- *   list          — list your active minions
- *   info          — plugin info
- *   reload        — reload (admin)
- */
+
 public class MinionCommand implements CommandExecutor, TabCompleter {
 
     private static final String PREFIX = "§6[Miniony] §r";
@@ -47,9 +38,9 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
         this.lumberjackManager  = lumberjackManager;
     }
 
-    // -------------------------------------------------------------------------
-    // CommandExecutor
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -67,21 +58,15 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    // -------------------------------------------------------------------------
-    // Sub-commands
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /**
-     * /minion give                       → farming to self
-     * /minion give farming               → farming to self
-     * /minion give lumberjack            → lumberjack to self
-     * /minion give farming   <player>    → farming to player  (admin)
-     * /minion give lumberjack <player>   → lumberjack to player (admin)
-     */
+    
     private void handleGive(CommandSender sender, String[] args) {
-        // Determine type (farming / lumberjack)
+        
         boolean isLumberjack = false;
-        int     playerArgIdx = 1; // default: args[1] is player name
+        int     playerArgIdx = 1; 
 
         if (args.length >= 2) {
             String a1 = args[1].toLowerCase();
@@ -91,13 +76,13 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
             } else if (a1.equals("farming")) {
                 playerArgIdx = 2;
             }
-            // Otherwise args[1] is treated as a player name (backward compat)
+            
         }
 
-        // Determine target player
+        
         Player target;
         if (args.length > playerArgIdx) {
-            // Giving to another player — needs admin permission
+            
             if (!sender.hasPermission("miniony.admin")) {
                 sender.sendMessage(PREFIX + "§cNo permission.");
                 return;
@@ -119,7 +104,7 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
             target = p;
         }
 
-        // Give the item
+        
         ItemStack item    = isLumberjack ? buildLumberjackItem() : buildMinionItem();
         String    typeName = isLumberjack ? "§2Lumberjack Minion" : "§6Farming Minion";
 
@@ -146,11 +131,7 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
         p.sendMessage("§7§oThen place a Farming Minion or right-click an existing one.");
     }
 
-    /**
-     * /minion call [farming|lumberjack|all]
-     * Teleports all owned minions of the given type to the caller's feet.
-     * Resets their busy flag so they resume working immediately.
-     */
+    
     private void handleCall(CommandSender sender, String[] args) {
         if (!(sender instanceof Player p)) {
             sender.sendMessage(PREFIX + "§cPlayers only.");
@@ -251,9 +232,9 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
                 + lumberjackManager.getMinionCount() + " lumberjack)");
     }
 
-    // -------------------------------------------------------------------------
-    // TabCompleter
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -267,9 +248,9 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
         return Collections.emptyList();
     }
 
-    // -------------------------------------------------------------------------
-    // Item builders (public so listener can call them for pickup)
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public static ItemStack buildMinionItem() {
         ItemStack item = new ItemStack(Material.SPAWNER);
@@ -337,9 +318,9 @@ public class MinionCommand implements CommandExecutor, TabCompleter {
         return item.getItemMeta().getLore().contains("§8[minion:wand]");
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     private String formatLoc(Location l) {
         return "§e" + l.getWorld().getName() + " §7("

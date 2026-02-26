@@ -18,24 +18,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Scheduled task that drives one FarmingMinion.
- *
- * Each trigger:
- * 1. Finds ALL mature crops and builds a nearest-neighbour harvest route.
- * 2. Walks to every crop in the route, harvesting each one.
- * 3. If no crops are ready but there is bone meal in storage, walks to the
- *    nearest immature crop and applies it.
- * 4. If still nothing to do and there are empty farmland/soul-sand plots plus
- *    matching seeds in storage, walks over and plants.
- * 5. Returns home after each full work cycle.
- *
- * AtomicBoolean in walkTo ensures the arrival callback fires exactly once
- * even if the stand is removed mid-walk.
- */
+
 public class FarmingMinionTask extends BukkitRunnable {
 
-    // Crop type → seed type used for scanning and planting
+    
     static final Map<Material, Material> CROP_SEED_MAP = new LinkedHashMap<>();
 
     static {
@@ -47,17 +33,17 @@ public class FarmingMinionTask extends BukkitRunnable {
     }
 
     private static final Random RANDOM = new Random();
-    /** Maximum crops harvested in one trip before returning home. */
+    
     private static final int MAX_CROPS_PER_TRIP = 20;
 
-    private static final long STORAGE_FULL_NOTIFY_INTERVAL = 60_000L; // 60 s between warnings
+    private static final long STORAGE_FULL_NOTIFY_INTERVAL = 60_000L; 
 
     private final FarmingMinion minion;
     private final Miniony plugin;
 
-    // Used to force-reset a stuck busy state after 60 seconds
+    
     private long busySince = 0;
-    // Throttle "storage full" messages so we don't spam the owner
+    
     private long lastStorageFullMessage = 0;
 
     public FarmingMinionTask(FarmingMinion minion, Miniony plugin) {
@@ -65,13 +51,13 @@ public class FarmingMinionTask extends BukkitRunnable {
         this.plugin = plugin;
     }
 
-    // =========================================================================
-    // Main tick
-    // =========================================================================
+    
+    
+    
 
     @Override
     public void run() {
-        // Safety: if stuck busy for >60 seconds, force reset
+        
         if (minion.isBusy()) {
             if (busySince > 0 && System.currentTimeMillis() - busySince > 60_000L) {
                 minion.setBusy(false);
@@ -86,7 +72,7 @@ public class FarmingMinionTask extends BukkitRunnable {
         Location home = minion.getHomeLocation();
         if (home.getWorld() == null || !home.getChunk().isLoaded()) return;
 
-        // --- Storage full check: notify owner and skip work ---
+        
         if (minion.isStorageFull()) {
             long now = System.currentTimeMillis();
             if (now - lastStorageFullMessage >= STORAGE_FULL_NOTIFY_INTERVAL) {
@@ -101,7 +87,7 @@ public class FarmingMinionTask extends BukkitRunnable {
             return;
         }
 
-        // --- Priority 1: harvest ALL mature crops in one trip ---
+        
         List<Block> crops = findAllMatureCrops(home);
         if (!crops.isEmpty()) {
             List<Block> route = buildNearestNeighborRoute(crops, home);
@@ -114,7 +100,7 @@ public class FarmingMinionTask extends BukkitRunnable {
             return;
         }
 
-        // --- Priority 2: apply bone meal to an immature crop ---
+        
         if (hasBoneMealInStorage()) {
             Block bonemealTarget = findCropToFertilize(home);
             if (bonemealTarget != null) {
@@ -129,7 +115,7 @@ public class FarmingMinionTask extends BukkitRunnable {
             }
         }
 
-        // --- Priority 3: plant seeds on empty farmland ---
+        
         PlantTarget plantTarget = findEmptyPlantSpot(home);
         if (plantTarget != null) {
             startBusy();
@@ -152,15 +138,11 @@ public class FarmingMinionTask extends BukkitRunnable {
         busySince = 0;
     }
 
-    /**
-     * Returns a walk-destination at the actual surface Y of the target X/Z column.
-     * Scans a few blocks above/below the crop's own Y to find the air block
-     * sitting on top of solid ground — the correct level for the stand to stand on.
-     */
+    
     private Location groundLevel(Location target, Location home) {
         int tx = target.getBlockX();
         int tz = target.getBlockZ();
-        int refY = target.getBlockY(); // crop is here; farmland is 1 below
+        int refY = target.getBlockY(); 
         for (int dy = 2; dy >= -4; dy--) {
             Block feet  = home.getWorld().getBlockAt(tx, refY + dy, tz);
             Block below = feet.getRelative(0, -1, 0);
@@ -168,14 +150,11 @@ public class FarmingMinionTask extends BukkitRunnable {
                 return new Location(home.getWorld(), tx + 0.5, refY + dy, tz + 0.5);
             }
         }
-        // Fallback: stand right at the crop's Y
+        
         return new Location(home.getWorld(), tx + 0.5, refY, tz + 0.5);
     }
 
-    /**
-     * Finds the actual ground Y near {@code referenceY} at the block column (bx, bz).
-     * Scans ±6 blocks so steep steps and drops are handled correctly.
-     */
+    
     private int scanGroundY(int bx, int bz, int referenceY) {
         for (int dy = 4; dy >= -6; dy--) {
             Block feet  = minion.getStand().getWorld().getBlockAt(bx, referenceY + dy, bz);
@@ -187,18 +166,14 @@ public class FarmingMinionTask extends BukkitRunnable {
         return referenceY;
     }
 
-    // =========================================================================
-    // Harvest chain — visits every crop in the route before returning home
-    // =========================================================================
+    
+    
+    
 
-    /**
-     * Recursively walks to each block in {@code route} (starting at {@code index}),
-     * harvests it if still mature, then proceeds to the next one.
-     * After the last crop, stays in place and clears the busy flag.
-     */
+    
     private void harvestChain(List<Block> route, int index, Location home) {
         if (index >= route.size()) {
-            // All done — stay where we are
+            
             setIdlePose();
             endBusy();
             return;
@@ -212,16 +187,16 @@ public class FarmingMinionTask extends BukkitRunnable {
                 harvestBlock(target);
             }
             setIdlePose();
-            // Move on to the next crop in the chain
+            
             harvestChain(route, index + 1, home);
         });
     }
 
-    // =========================================================================
-    // Crop scanning
-    // =========================================================================
+    
+    
+    
 
-    /** Returns every mature crop in the minion's area (unsorted). */
+    
     private List<Block> findAllMatureCrops(Location home) {
         List<Block> candidates = new ArrayList<>();
 
@@ -245,10 +220,7 @@ public class FarmingMinionTask extends BukkitRunnable {
         return candidates;
     }
 
-    /**
-     * Builds a nearest-neighbour route through {@code blocks} starting from
-     * {@code start}. Minimises total walking distance.
-     */
+    
     private List<Block> buildNearestNeighborRoute(List<Block> blocks, Location start) {
         List<Block> remaining = new ArrayList<>(blocks);
         List<Block> route = new ArrayList<>();
@@ -278,9 +250,9 @@ public class FarmingMinionTask extends BukkitRunnable {
         return ageable.getAge() < ageable.getMaximumAge();
     }
 
-    // =========================================================================
-    // Harvesting — uses manual drops so they are always correct
-    // =========================================================================
+    
+    
+    
 
     private void harvestBlock(Block block) {
         Material cropType = block.getType();
@@ -288,12 +260,12 @@ public class FarmingMinionTask extends BukkitRunnable {
 
         List<ItemStack> drops = getManualDrops(cropType);
 
-        // Replant: reset age to 0
+        
         Ageable ageable = (Ageable) block.getBlockData();
         ageable.setAge(0);
         block.setBlockData(ageable);
 
-        // Store drops (overflow drops to the ground)
+        
         for (ItemStack drop : drops) {
             ItemStack remainder = minion.addToStorage(drop);
             if (remainder != null) {
@@ -302,25 +274,25 @@ public class FarmingMinionTask extends BukkitRunnable {
             }
         }
 
-        // Effects
+        
         block.getWorld().spawnParticle(Particle.COMPOSTER,
                 block.getLocation().add(0.5, 1.2, 0.5), 6, 0.25, 0.25, 0.25, 0);
         block.getWorld().playSound(block.getLocation(), Sound.BLOCK_CROP_BREAK, 0.7f, 1.1f);
 
-        // Swing animation
+        
         ArmorStand s = minion.getStand();
         if (s != null && !s.isDead()) {
             s.setRightArmPose(new EulerAngle(-1.2, 0, 0));
         }
     }
 
-    /** Returns realistic drops for each crop type without relying on block.getDrops(). */
+    
     private List<ItemStack> getManualDrops(Material cropType) {
         List<ItemStack> drops = new ArrayList<>();
         switch (cropType) {
             case WHEAT -> {
                 drops.add(new ItemStack(Material.WHEAT, 1));
-                int seeds = RANDOM.nextInt(3); // 0–2 bonus seeds
+                int seeds = RANDOM.nextInt(3); 
                 if (seeds > 0) drops.add(new ItemStack(Material.WHEAT_SEEDS, seeds));
             }
             case CARROTS  -> drops.add(new ItemStack(Material.CARROT,  1 + RANDOM.nextInt(4)));
@@ -335,11 +307,11 @@ public class FarmingMinionTask extends BukkitRunnable {
         return drops;
     }
 
-    // =========================================================================
-    // Bone meal
-    // =========================================================================
+    
+    
+    
 
-    /** Finds the nearest immature crop in the minion's area to fertilise. */
+    
     private Block findCropToFertilize(Location home) {
         List<Block> candidates = new ArrayList<>();
 
@@ -374,14 +346,11 @@ public class FarmingMinionTask extends BukkitRunnable {
         return false;
     }
 
-    /**
-     * Consumes one bone meal from storage and advances the crop's growth
-     * by 2–4 stages (capped at maximum age).
-     */
+    
     private void applyBonemealTo(Block block) {
         if (!isImmatureCrop(block)) return;
 
-        // Consume one bone meal
+        
         Iterator<ItemStack> it = minion.getStorage().iterator();
         boolean consumed = false;
         while (it.hasNext()) {
@@ -398,27 +367,27 @@ public class FarmingMinionTask extends BukkitRunnable {
         }
         if (!consumed) return;
 
-        // Advance growth 2–4 stages
+        
         Ageable ageable = (Ageable) block.getBlockData();
         int newAge = Math.min(ageable.getAge() + 2 + RANDOM.nextInt(3), ageable.getMaximumAge());
         ageable.setAge(newAge);
         block.setBlockData(ageable);
 
-        // Effects
+        
         block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                 block.getLocation().add(0.5, 0.8, 0.5), 8, 0.3, 0.3, 0.3, 0);
         block.getWorld().playSound(block.getLocation(), Sound.ITEM_BONE_MEAL_USE, 0.7f, 1f);
 
-        // Arm animation
+        
         ArmorStand s = minion.getStand();
         if (s != null && !s.isDead()) {
             s.setRightArmPose(new EulerAngle(-0.5, 0.3, 0));
         }
     }
 
-    // =========================================================================
-    // Seed planting
-    // =========================================================================
+    
+    
+    
 
     private record PlantTarget(Block soil, Material cropType, Material seedType) {}
 
@@ -449,7 +418,7 @@ public class FarmingMinionTask extends BukkitRunnable {
             }
         }
 
-        // Sort by closest to home
+        
         soils.sort(Comparator.comparingDouble(b -> b.getLocation().distanceSquared(home)));
 
         for (Block soil : soils) {
@@ -457,7 +426,7 @@ public class FarmingMinionTask extends BukkitRunnable {
                 if (hasSeedInStorage(Material.NETHER_WART))
                     return new PlantTarget(soil, Material.NETHER_WART, Material.NETHER_WART);
             } else {
-                // FARMLAND — try each seed type in priority order
+                
                 for (Map.Entry<Material, Material> entry : CROP_SEED_MAP.entrySet()) {
                     if (entry.getKey() == Material.NETHER_WART) continue;
                     if (hasSeedInStorage(entry.getValue()))
@@ -478,9 +447,9 @@ public class FarmingMinionTask extends BukkitRunnable {
     private void plantSeed(PlantTarget target) {
         Block soil = target.soil();
         Block above = soil.getRelative(0, 1, 0);
-        if (above.getType() != Material.AIR) return; // spot was filled while walking
+        if (above.getType() != Material.AIR) return; 
 
-        // Consume one seed from storage
+        
         Iterator<ItemStack> it = minion.getStorage().iterator();
         boolean consumed = false;
         while (it.hasNext()) {
@@ -497,13 +466,13 @@ public class FarmingMinionTask extends BukkitRunnable {
         }
         if (!consumed) return;
 
-        // Place the crop
+        
         above.setType(target.cropType());
         Ageable ageable = (Ageable) above.getBlockData();
         ageable.setAge(0);
         above.setBlockData(ageable);
 
-        // Effects
+        
         above.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                 above.getLocation().add(0.5, 0.5, 0.5), 5, 0.2, 0.2, 0.2, 0);
         above.getWorld().playSound(above.getLocation(), Sound.ITEM_CROP_PLANT, 0.8f, 1.0f);
@@ -512,15 +481,11 @@ public class FarmingMinionTask extends BukkitRunnable {
         if (s != null && !s.isDead()) s.setRightArmPose(new EulerAngle(-0.8, 0, 0.3));
     }
 
-    // =========================================================================
-    // Movement
-    // =========================================================================
+    
+    
+    
 
-    /**
-     * Smoothly walks the armor stand to {@code to} and calls {@code onArrival}.
-     * Uses AtomicBoolean so the callback fires exactly once even if the stand
-     * is removed during the walk.
-     */
+    
     private void walkTo(Location to, Runnable onArrival) {
         ArmorStand stand = minion.getStand();
         if (stand == null || stand.isDead()) {
@@ -544,8 +509,8 @@ public class FarmingMinionTask extends BukkitRunnable {
         double dx = (to.getX() - from.getX()) / steps;
         double dz = (to.getZ() - from.getZ()) / steps;
 
-        // Track Y dynamically — updated every step so the scan window follows
-        // the actual terrain rather than being anchored to the walk start.
+        
+        
         AtomicInteger currentY = new AtomicInteger(from.getBlockY());
         AtomicBoolean done     = new AtomicBoolean(false);
 
@@ -560,15 +525,15 @@ public class FarmingMinionTask extends BukkitRunnable {
                     return;
                 }
 
-                // X/Z follow the straight path; Y stair-steps along actual terrain
+                
                 Location pos     = from.clone().add(dx * step, 0, dz * step);
                 int      groundY = scanGroundY(pos.getBlockX(), pos.getBlockZ(), currentY.get());
-                currentY.set(groundY); // advance reference so next step finds *its* ground
+                currentY.set(groundY); 
                 pos.setY(groundY);
                 pos.setYaw(yaw);
                 s.teleport(pos);
 
-                // Sine-wave arm swing while walking
+                
                 double swing = Math.sin(step * 0.9) * 0.7;
                 s.setRightArmPose(new EulerAngle(swing, 0, 0));
                 s.setLeftArmPose(new EulerAngle(-swing, 0, 0));
@@ -587,9 +552,9 @@ public class FarmingMinionTask extends BukkitRunnable {
         s.setLeftArmPose(EulerAngle.ZERO);
     }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
+    
+    
+    
 
     private float yawToward(Location from, Location to) {
         double dx = to.getX() - from.getX();

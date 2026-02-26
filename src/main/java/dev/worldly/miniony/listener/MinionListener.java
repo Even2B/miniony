@@ -36,11 +36,11 @@ public class MinionListener implements Listener {
     private final MinionManager           farmingManager;
     private final LumberjackMinionManager lumberjackManager;
 
-    // Open GUIs per player
+    
     private final Map<UUID, FarmingMinionInventory>    openFarmingGuis    = new HashMap<>();
     private final Map<UUID, LumberjackMinionInventory> openLumberjackGuis = new HashMap<>();
 
-    // Wand selections (farming only)
+    
     private final Map<UUID, Location> wandPos1 = new HashMap<>();
     private final Map<UUID, Location> wandPos2 = new HashMap<>();
 
@@ -50,9 +50,9 @@ public class MinionListener implements Listener {
         this.lumberjackManager = lumberjackManager;
     }
 
-    // =========================================================================
-    // Block interact — wand + minion placement
-    // =========================================================================
+    
+    
+    
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event) {
@@ -61,13 +61,13 @@ public class MinionListener implements Listener {
         Player    player = event.getPlayer();
         ItemStack item   = player.getInventory().getItemInMainHand();
 
-        // --- Wand (farming only) ---
+        
         if (MinionCommand.isWandItem(item)) {
             handleWandInteract(event, player);
             return;
         }
 
-        // --- Farming minion placement ---
+        
         if (MinionCommand.isMinionItem(item)) {
             if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
             event.setCancelled(true);
@@ -75,7 +75,7 @@ public class MinionListener implements Listener {
             return;
         }
 
-        // --- Lumberjack minion placement ---
+        
         if (MinionCommand.isLumberjackItem(item)) {
             if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
             event.setCancelled(true);
@@ -83,9 +83,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Farming placement
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     private void placeFarmingMinion(Player player, ItemStack item, Block clicked) {
         if (!player.hasPermission("miniony.place")) {
@@ -113,9 +113,9 @@ public class MinionListener implements Listener {
             player.sendMessage(PREFIX + "§aFarming Minion placed! §7Use §e/minion wand §7to set a region.");
     }
 
-    // -------------------------------------------------------------------------
-    // Lumberjack placement
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     private void placeLumberjackMinion(Player player, ItemStack item, Block clicked) {
         if (!player.hasPermission("miniony.place")) {
@@ -139,9 +139,9 @@ public class MinionListener implements Listener {
                 + LumberjackMinion.DEFAULT_RADIUS + " blocks§7.");
     }
 
-    // =========================================================================
-    // Wand interaction (farming region selection)
-    // =========================================================================
+    
+    
+    
 
     private void handleWandInteract(PlayerInteractEvent event, Player player) {
         Block clicked = event.getClickedBlock();
@@ -187,9 +187,9 @@ public class MinionListener implements Listener {
         return new MinionRegion(p1, p2);
     }
 
-    // =========================================================================
-    // Right-click armor stand — open GUI / assign region / pick up
-    // =========================================================================
+    
+    
+    
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onRightClickStand(PlayerInteractAtEntityEvent event) {
@@ -200,12 +200,12 @@ public class MinionListener implements Listener {
         Player player = event.getPlayer();
         UUID   standId = entity.getUniqueId();
 
-        // --- Farming minion? ---
+        
         FarmingMinion farming = farmingManager.getMinionByStandUuid(standId);
         if (farming != null) {
             event.setCancelled(true);
 
-            // Wand: assign region
+            
             if (MinionCommand.isWandItem(player.getInventory().getItemInMainHand())) {
                 assignWandRegion(player, farming);
                 return;
@@ -219,7 +219,7 @@ public class MinionListener implements Listener {
             return;
         }
 
-        // --- Lumberjack minion? ---
+        
         LumberjackMinion lumber = lumberjackManager.getMinionByStandUuid(standId);
         if (lumber != null) {
             event.setCancelled(true);
@@ -232,9 +232,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // =========================================================================
-    // Left-click (hit) — cancel damage, show hint
-    // =========================================================================
+    
+    
+    
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onHitStand(EntityDamageByEntityEvent event) {
@@ -251,9 +251,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // =========================================================================
-    // Pickup helpers
-    // =========================================================================
+    
+    
+    
 
     private void pickupFarming(Player player, FarmingMinion minion) {
         if (!player.getUniqueId().equals(minion.getOwnerUuid())
@@ -285,9 +285,9 @@ public class MinionListener implements Listener {
         player.sendMessage(PREFIX + "§aLumberjack Minion picked up!");
     }
 
-    // =========================================================================
-    // Wand region assignment
-    // =========================================================================
+    
+    
+    
 
     private void assignWandRegion(Player player, FarmingMinion minion) {
         Location p1 = wandPos1.get(player.getUniqueId());
@@ -311,15 +311,15 @@ public class MinionListener implements Listener {
                 minion.getStand().getLocation().add(0, 0.5, 0), 10, 0.3, 0.3, 0.3, 0);
     }
 
-    // =========================================================================
-    // GUI click — Farming
-    // =========================================================================
+    
+    
+    
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onGuiClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        // --- Farming GUI ---
+        
         FarmingMinionInventory farmGui = openFarmingGuis.get(player.getUniqueId());
         if (farmGui != null && event.getInventory().equals(farmGui.getInventory())) {
             int slot = event.getRawSlot();
@@ -329,7 +329,7 @@ public class MinionListener implements Listener {
             return;
         }
 
-        // --- Lumberjack GUI ---
+        
         LumberjackMinionInventory lumbGui = openLumberjackGuis.get(player.getUniqueId());
         if (lumbGui != null && event.getInventory().equals(lumbGui.getInventory())) {
             int slot = event.getRawSlot();
@@ -411,9 +411,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // =========================================================================
-    // GUI close
-    // =========================================================================
+    
+    
+    
 
     @EventHandler
     public void onGuiClose(InventoryCloseEvent event) {
@@ -435,9 +435,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // =========================================================================
-    // Chunk load — re-spawn minions whose armor stand was deleted
-    // =========================================================================
+    
+    
+    
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
@@ -466,9 +466,9 @@ public class MinionListener implements Listener {
         }
     }
 
-    // =========================================================================
-    // Shared helpers
-    // =========================================================================
+    
+    
+    
 
     private void collectAll(Player player, java.util.List<ItemStack> storage,
                             Runnable refresh, Runnable save) {

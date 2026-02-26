@@ -17,7 +17,7 @@ public class LumberjackMinionInventory implements InventoryHolder {
     public static final int SIZE            = 54;
     public static final int SLOT_INFO       = 36;
     public static final int SLOT_SPEED_UP   = 38;
-    // slot 40 = gap (no range upgrade for lumberjack — radius grows with speed)
+    
     public static final int SLOT_STORAGE_UP = 42;
     public static final int SLOT_TOGGLE     = 44;
     public static final int SLOT_COLLECT_ALL = 49;
@@ -32,9 +32,9 @@ public class LumberjackMinionInventory implements InventoryHolder {
         refresh();
     }
 
-    // -------------------------------------------------------------------------
-    // Build / Refresh
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void refresh() {
         inventory.clear();
@@ -104,9 +104,9 @@ public class LumberjackMinionInventory implements InventoryHolder {
         ));
     }
 
-    // -------------------------------------------------------------------------
-    // Item builders
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     private ItemStack buildInfo() {
         ItemStack item = new ItemStack(Material.OAK_LOG);
@@ -169,11 +169,11 @@ public class LumberjackMinionInventory implements InventoryHolder {
         return sb.toString();
     }
 
-    // -------------------------------------------------------------------------
-    // Sync / static helpers
-    // -------------------------------------------------------------------------
+    
+    
+    
 
-    /** Called on GUI close to sync any items the player dragged into storage slots. */
+    
     public void syncStorageToMinion() {
         List<ItemStack> stored = minion.getStorage();
         stored.clear();

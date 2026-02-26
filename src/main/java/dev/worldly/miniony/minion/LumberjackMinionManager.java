@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-/**
- * Manages all LumberjackMinion instances: spawn, remove, save, load.
- * Persists data in plugins/Miniony/lumberjacks.yml.
- */
+
 public class LumberjackMinionManager {
 
     private final Miniony plugin;
@@ -32,9 +29,9 @@ public class LumberjackMinionManager {
         this.dataFile = new File(plugin.getDataFolder(), "lumberjacks.yml");
     }
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public void load() {
         if (!dataFile.exists()) return;
@@ -123,9 +120,9 @@ public class LumberjackMinionManager {
         standToMinion.clear();
     }
 
-    // -------------------------------------------------------------------------
-    // Spawn / Remove
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public LumberjackMinion createMinion(UUID ownerUuid, String ownerName, Location location) {
         LumberjackMinion minion = new LumberjackMinion(ownerUuid, ownerName, location);
@@ -144,10 +141,7 @@ public class LumberjackMinionManager {
         }
     }
 
-    /**
-     * Re-spawns the armor stand for a minion whose entity was deleted by a chunk unload.
-     * Keeps all data (storage, upgrades) intact.
-     */
+    
     public void respawnMinion(LumberjackMinion minion) {
         if (minion.getStandUuid() != null) {
             standToMinion.remove(minion.getStandUuid());
@@ -174,9 +168,9 @@ public class LumberjackMinionManager {
         save();
     }
 
-    // -------------------------------------------------------------------------
-    // Lookups
-    // -------------------------------------------------------------------------
+    
+    
+    
 
     public LumberjackMinion getMinionByStandUuid(UUID standUuid) {
         UUID id = standToMinion.get(standUuid);
