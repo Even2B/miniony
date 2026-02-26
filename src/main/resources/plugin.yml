@@ -1,0 +1,25 @@
+name: miniony
+version: '${project.version}'
+main: dev.worldly.miniony.Miniony
+api-version: '1.21'
+description: Advanced farming minions plugin
+
+commands:
+  minion:
+    description: Main command for Miniony
+    usage: /minion <give|list|info|reload>
+    aliases: [minions, m]
+
+permissions:
+  miniony.give:
+    description: Allows a player to give themselves a farming minion
+    default: op
+  miniony.wand:
+    description: Allows a player to get the region selection wand
+    default: op
+  miniony.place:
+    description: Allows a player to place farming minions
+    default: true
+  miniony.admin:
+    description: Full admin access (give to others, reload, pick up others' minions)
+    default: op
